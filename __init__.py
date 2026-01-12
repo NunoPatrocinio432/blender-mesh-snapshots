@@ -15,12 +15,14 @@ import bpy
 from . import addon_preferences
 from . import properties
 from . import operators
+from . import panels
 
 
 modules = [
     addon_preferences,
     properties,
     operators,
+    panels,
 ]
 
 def register():

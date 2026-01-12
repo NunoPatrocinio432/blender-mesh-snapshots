@@ -2,6 +2,7 @@ import json
 import os
 import tempfile
 import bmesh
+import bpy
 from datetime import datetime
 
 
@@ -36,8 +37,9 @@ def format_file_size(size_bytes):
 def capture_mesh_data(obj):
     if obj.type != 'MESH':
         raise ValueError("Object is not a mesh")
-    
+
     mesh = obj.data
+    mesh.update()
     bm = bmesh.new()
     bm.from_mesh(mesh)
     
@@ -85,13 +87,11 @@ def apply_mesh_data(obj, mesh_data):
     
     bm.verts.ensure_lookup_table()
     
-    # Adicionar faces
     for f_indices in mesh_data["faces"]:
         try:
             verts = [bm.verts[i] for i in f_indices]
             bm.faces.new(verts)
         except (ValueError, IndexError):
-            # Invalide Face or exists
             pass
     
     bm.to_mesh(mesh)

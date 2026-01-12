@@ -42,11 +42,21 @@ class MeshHistoryPreferences(AddonPreferences):
         layout = self.layout
         
         box = layout.box()
-        box.label(text="Storage:", icon='FILE_FOLDER')
+        box.label(text="Storage Path:", icon='FILE_FOLDER')
         box.prop(self, "storage_path")
         
         row = box.row()
-        row.label(text=f"Storage Location: {self.storage_path}", icon='INFO')
+        row.label(text=f"Current Location: {self.storage_path}", icon='INFO')
+        
+        box = layout.box()
+        box.label(text="Visualization:", icon='WINDOW')
+        box.prop(self, "show_vertex_count")
+        box.prop(self, "show_file_size")
+        
+        box = layout.box()
+        box.label(text="Confirmations:", icon='QUESTION')
+        box.prop(self, "confirm_restore")
+        box.prop(self, "confirm_delete")
 
 
 def get_preferences():

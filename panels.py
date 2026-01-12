@@ -94,71 +94,9 @@ class MESH_history_panel(Panel):
             col = box.column(align=True)
             col.label(text="No snapshot saved", icon='INFO')
             col.separator(factor=0.5)
-            col.label(text="Select on mesh and click")
-            col.label(text="'Save snapshot' to start")
-            col.label(text="'Guardar Snapshot' para começar")
-            row.label(text=utils.format_file_size(total_size))
-        
-        layout.separator()
-        
-        if len(scene.mesh_snapshots) > 0:
-            box = layout.box()
-            box.label(text="Saved snapshots:", icon='DOCUMENTS')
-            
-            for i, snapshot in enumerate(scene.mesh_snapshots):
-                snap_box = box.box()
-                
-                row = snap_box.row(align=True)
-                row.label(text=snapshot.name, icon='MESH_DATA')
-                
-                col = row.column(align=True)
-                col.scale_x = 0.8
-                
-                op = col.operator(
-                    "mesh.restore_snapshot",
-                    text="",
-                    icon='RECOVER_LAST'
-                )
-                op.index = i
-                
-                op = col.operator(
-                    "mesh.delete_snapshot",
-                    text="",
-                    icon='TRASH'
-                )
-                op.index = i
-                
-                info_col = snap_box.column(align=True)
-                info_col.scale_y = 0.8
-                
-                info_col.label(
-                    text=f"  Object: {snapshot.object_name}",
-                    icon='OBJECT_DATA'
-                )
-                info_col.label(
-                    text=f"  Time: {snapshot.timestamp}",
-                    icon='TIME'
-                )
-                info_col.label(
-                    text=f"  Geometry: {snapshot.vertex_count}v / {snapshot.face_count}f",
-                    icon='EDITMODE_HLT'
-                )
-                info_col.label(
-                    text=f"  Size: {utils.format_file_size(snapshot.file_size)}",
-                    icon='DISK_DRIVE'
-                )
-            
-            layout.separator()
-            row = layout.row()
-            row.operator("mesh.clear_all_snapshots", icon='TRASH', text="Limpar Todos")
-        
-        else:
-            box = layout.box()
-            col = box.column(align=True)
-            col.label(text="No snapshot saved", icon='INFO')
-            col.separator(factor=0.5)
             col.label(text="Select one mesh and click")
             col.label(text="'Save snapshot' to start")
+            row.label(text=utils.format_file_size(total_size))
 
 
 class MESH_history_info(Panel):
