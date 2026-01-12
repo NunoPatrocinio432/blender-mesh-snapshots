@@ -1,27 +1,26 @@
-import bpy
-
 bl_info = {
     "name": "Mesh History Manager",
     "author": "Nuno Sponsor",
     "version": (1, 0, 0),
     "blender": (5, 0, 1),
+    "location": "View3D > Sidebar > Mesh History",
     "description": "Save and restores mesh states",
     "category": "Object",
     "doc_url": "",
     "releases_url": ""
 }
 
+import bpy
+
 from . import addon_preferences
 from . import properties
 from . import operators
-from . import ui
 
-# Lista de módulos para registar
+
 modules = [
     addon_preferences,
     properties,
     operators,
-    ui,
 ]
 
 def register():
