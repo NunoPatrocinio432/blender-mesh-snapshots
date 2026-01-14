@@ -23,53 +23,62 @@ class MESH_history_panel(Panel):
         
         layout.separator()
         
-        if len(scene.mesh_snapshots) > 0:
+        obj = context.active_object
+        current_name = obj.name if obj and obj.type == 'MESH' else None
+        
+        if current_name:
+            compatible_snapshots = [
+                (i, snap) for i, snap in enumerate(scene.mesh_snapshots)
+                if snap.object_name == current_name
+            ]
+        else:
+            compatible_snapshots = []
+        
+        if len(compatible_snapshots) > 0:
             box = layout.box()
             row = box.row()
-            row.label(text=f"Total: {len(scene.mesh_snapshots)}", icon='FILE')
+            row.label(text=f"Snapshots of '{current_name}': {len(compatible_snapshots)}", icon='FILE')
             
             if prefs.show_file_size:
-                total_size = sum(s.file_size for s in scene.mesh_snapshots)
+                total_size = sum(snap.file_size for _, snap in compatible_snapshots)
                 row.label(text=utils.format_file_size(total_size))
         
         layout.separator()
         
-        if len(scene.mesh_snapshots) > 0:
+        if len(compatible_snapshots) > 0:
             box = layout.box()
             box.label(text="Saved Snapshots:", icon='DOCUMENTS')
             
-            for i, snapshot in enumerate(scene.mesh_snapshots):
+            for original_index, snapshot in compatible_snapshots:
                 snap_box = box.box()
                 
                 row = snap_box.row(align=True)
+                
+                row.label(text="", icon='CHECKMARK')
                 row.label(text=snapshot.name, icon='MESH_DATA')
                 
                 col = row.column(align=True)
                 col.scale_x = 0.8
                 
-                op = col.operator(
+                restore_op = col.operator(
                     "mesh.restore_snapshot",
                     text="",
                     icon='RECOVER_LAST'
                 )
-                op.index = i
+                restore_op.index = original_index
                 
                 op = col.operator(
                     "mesh.delete_snapshot",
                     text="",
                     icon='TRASH'
                 )
-                op.index = i
+                op.index = original_index
                 
                 info_col = snap_box.column(align=True)
                 info_col.scale_y = 0.8
                 
                 info_col.label(
-                    text=f"  Objeto: {snapshot.object_name}",
-                    icon='OBJECT_DATA'
-                )
-                info_col.label(
-                    text=f"  Data: {snapshot.timestamp}",
+                    text=f"  Timestamp: {snapshot.timestamp}",
                     icon='TIME'
                 )
                 
@@ -87,16 +96,36 @@ class MESH_history_panel(Panel):
             
             layout.separator()
             row = layout.row()
-            row.operator("mesh.clear_all_snapshots", icon='TRASH', text="Clear all")
+            if len(compatible_snapshots) > 1:
+                row.operator("mesh.clear_object_snapshots", icon='TRASH', text=f"Delete snapshots of '{current_name}'")
+        
+        elif current_name:
+            box = layout.box()
+            col = box.column(align=True)
+            col.label(text=f"No snapshots of '{current_name}'", icon='INFO')
+            col.separator(factor=0.5)
+            col.label(text="Click 'Save Snapshot' to create")
         
         else:
             box = layout.box()
             col = box.column(align=True)
-            col.label(text="No snapshot saved", icon='INFO')
+            col.label(text="Select a mesh object", icon='INFO')
             col.separator(factor=0.5)
-            col.label(text="Select one mesh and click")
-            col.label(text="'Save snapshot' to start")
-            row.label(text=utils.format_file_size(total_size))
+            col.label(text="The snapshots will appear here.")
+        
+        total_snapshots = len(scene.mesh_snapshots)
+
+        other_count = total_snapshots - len(compatible_snapshots)
+        layout.separator()
+        box = layout.box()
+        col = box.column(align=True)
+        col.scale_y = 0.8
+        col.label(text=f"ℹ {other_count} snapshots from other objects", icon='INFO')
+        
+        layout.separator()
+        row = layout.row()
+        row.alert = True
+        row.operator("mesh.clear_all_snapshots", icon='TRASH', text=f"Delete all snapshots in project ({total_snapshots})")
 
 
 class MESH_history_info(Panel):
@@ -124,7 +153,6 @@ class MESH_history_info(Panel):
         
         layout.separator()
         
-        # Informações adicionais
         box = layout.box()
         box.label(text="Information:", icon='INFO')
         

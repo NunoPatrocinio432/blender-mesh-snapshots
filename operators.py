@@ -58,9 +58,17 @@ class MESH_OT_save_snapshot(Operator):
             return {'CANCELLED'}
     
     def invoke(self, context, event):
+        if context.mode == 'EDIT_MESH':
+            self.report({'ERROR'}, "It's not possible to save a snapshot in Edit Mode.")
+            return {'CANCELLED'}
+
         obj = context.active_object
         if obj:
-            count = len(context.scene.mesh_snapshots) + 1
+            count = sum(
+                1
+                for snap in context.scene.mesh_snapshots
+                if snap.object_name == obj.name
+            )            
             self.snapshot_name = f"{obj.name}_v{count}"
         
         return context.window_manager.invoke_props_dialog(self, width=400)
@@ -96,15 +104,27 @@ class MESH_OT_restore_snapshot(Operator):
             obj = context.active_object
             
             if obj is None or obj.type != 'MESH':
-                mesh = bpy.data.meshes.new(mesh_data['object_name'])
-                obj = bpy.data.objects.new(mesh_data['object_name'], mesh)
-                context.collection.objects.link(obj)
-                context.view_layer.objects.active = obj
-                obj.select_set(True)
+                self.report({'ERROR'}, 
+                    f"Select the object '{mesh_data['object_name']}'")
+                return {'CANCELLED'}
+            
+            original_name = mesh_data['object_name']
+            current_name = obj.name
+            
+            if current_name != original_name:
+                self.report({'ERROR'}, 
+                    f"This snapshot only works on the object '{original_name}'. "
+                    f"Current object: '{current_name}'")
+                return {'CANCELLED'}
+            
+            if context.mode != 'OBJECT':
+                bpy.ops.object.mode_set(mode='OBJECT')
             
             utils.apply_mesh_data(obj, mesh_data)
             
-            self.report({'INFO'}, f"Snapshot '{snapshot.name}' restored")
+            self.report({'INFO'}, 
+                f"✓ Snapshot '{snapshot.name}' restored "
+                f"({mesh_data['vertex_count']}v, {mesh_data['face_count']}f)")
             return {'FINISHED'}
             
         except FileNotFoundError:
@@ -112,21 +132,39 @@ class MESH_OT_restore_snapshot(Operator):
             return {'CANCELLED'}
         except Exception as e:
             self.report({'ERROR'}, f"Error on restore: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return {'CANCELLED'}
     
     def invoke(self, context, event):
-        from .addon_preferences import get_preferences
         prefs = get_preferences()
         snapshots = context.scene.mesh_snapshots
         
         if self.index >= 0 and self.index < len(snapshots):
             snapshot = snapshots[self.index]
             
+            obj = context.active_object
+            if obj is None or obj.type != 'MESH':
+                self.report({'WARNING'}, 
+                    f"Select the object '{snapshot.object_name}' first")
+                return {'CANCELLED'}
+            
+            original_name = snapshot.object_name
+            current_name = obj.name
+            
+            if current_name != original_name:
+                self.report({'ERROR'}, 
+                    f"Incompatible snapshot! This snapshot belongs to the object. '{original_name}'. "
+                    f"Current object: '{current_name}'")
+                return {'CANCELLED'}
+            
             if prefs.confirm_restore:
+                message=f"Restore '{snapshot.name}'?\nMesh will be replaced."
+                
                 return context.window_manager.invoke_confirm(
                     self,
                     event,
-                    message=f"Restore '{snapshot.name}'?\nMesh will be replaced."
+                    message=message
                 )
         
         return self.execute(context)
@@ -215,12 +253,75 @@ class MESH_OT_clear_all_snapshots(Operator):
             event,
             message=f"Delete all {count} snapshots?\nThis action can't be reverted"
         )
+    
+class MESH_clear_object_snapshots(Operator):
+    bl_idname = "mesh.clear_object_snapshots"
+    bl_label = "Clear Object's Snapshots"
+    bl_description = "Remove all object's snapshots"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        if not obj or obj.type != 'MESH':
+            return False
+        
+        current_name = obj.name
+        for snapshot in context.scene.mesh_snapshots:
+            if snapshot.object_name == current_name:
+                return True
+        return False
+    
+    def execute(self, context):
+        obj = context.active_object
+        if not obj or obj.type != 'MESH':
+            return {'CANCELLED'}
+        
+        current_name = obj.name
+        snapshots = context.scene.mesh_snapshots
+        
+        try:
+            indices_to_remove = []
+            for i in range(len(snapshots) - 1, -1, -1):
+                snapshot = snapshots[i]
+                if snapshot.object_name == current_name:
+                    if os.path.exists(snapshot.filepath):
+                        os.remove(snapshot.filepath)
+                    indices_to_remove.append(i)
+            
+            for i in indices_to_remove:
+                snapshots.remove(i)
+            
+            count = len(indices_to_remove)
+            self.report({'INFO'}, f"{count} snapshots of '{current_name}' deleted")
+            return {'FINISHED'}
+            
+        except Exception as e:
+            self.report({'ERROR'}, f"Error: {str(e)}")
+            return {'CANCELLED'}
+    
+    def invoke(self, context, event):
+        obj = context.active_object
+        if not obj:
+            return {'CANCELLED'}
+        
+        current_name = obj.name
+        
+        count = sum(1 for s in context.scene.mesh_snapshots if s.object_name == current_name)
+        
+        return context.window_manager.invoke_confirm(
+            self,
+            event,
+            message=f"Delete {count} snapshot of '{current_name}'?\nThis action can't be reverted."
+        )
+
 
 classes = (
     MESH_OT_save_snapshot,
     MESH_OT_restore_snapshot,
     MESH_OT_delete_snapshot,
     MESH_OT_clear_all_snapshots,
+    MESH_clear_object_snapshots
 )
 
 

@@ -5,7 +5,7 @@ A Blender addon that allows you to save and restore mesh states with ease.
 ## 🔧 Requirements
 - **Blender**: Version 5.0.1
 
-## 🎯 Features
+## Features
 
 - **Save Snapshots**: Capture complete mesh states at any point
 - **Restore States**: Return to any previous snapshot instantly
@@ -14,7 +14,7 @@ A Blender addon that allows you to save and restore mesh states with ease.
 - **Detailed Information**: View statistics for each snapshot (vertices, faces, file size)
 - **Customizable**: Configure storage location, limits, and UI preferences
 
-## 📦 Installation
+## Installation
 
 ### Method 1: Install via ZIP (Recommended)
 1. Download all files maintaining the folder structure
