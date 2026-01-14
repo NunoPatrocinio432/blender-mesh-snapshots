@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Mesh History Manager",
+    "name": "Mesh History Snapshots",
     "author": "Nuno Sponsor",
     "version": (1, 0, 0),
     "blender": (5, 0, 1),
