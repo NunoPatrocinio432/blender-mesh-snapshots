@@ -1,8 +1,10 @@
-# Mesh History
+# Blender Mesh Snapshots
+
+##WARNING: THIS IS STILL IN DEVELOPMENT AND THIS VERSION IS ONLY AN ALPHA VERSION, USE AT YOUR OWN RISK
 
 A Blender addon that allows you to save and restore mesh states with ease.
 
-## 🔧 Requirements
+## Requirements
 - **Blender**: Version 5.0.1
 
 ## Features
