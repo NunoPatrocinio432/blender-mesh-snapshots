@@ -20,14 +20,14 @@ A Blender addon that allows you to save and restore mesh states with ease.
 
 ### Method 1: Install via ZIP (Recommended)
 1. Download all files maintaining the folder structure
-2. Compress the `mesh_history_manager` folder into a ZIP file
+2. Compress the `mesh_history_snapshots` folder into a ZIP file
 3. In Blender: `Edit → Preferences → Add-ons → Install`
 4. Select the ZIP file
 5. Enable the addon by checking the checkbox
 
 ### Method 2: Manual Installation
 1. Locate your Blender addons folder
-2. Copy the complete `mesh_history_manager` zip into the addons directory
+2. Copy the complete `mesh_history_snapshots` zip into the addons directory
 3. Restart Blender
 4. Enable in `Edit → Preferences → Add-ons`
 
